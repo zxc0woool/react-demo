@@ -1,11 +1,11 @@
 import axios from "axios";
 import { getItem } from "./auth";
-import { errorException } from "./axios.error"; //http异常处理
+// import { errorException } from "./axios.error"; //http异常处理
 
 const IS_PRETREATMENT = false; // 请求数据是否预处理
 
 // 请求路径
-const BaseUrl = "http://192.168.0.195:80"; // 主机及端口
+const BaseUrl = "http://192.168.0.196:8099"; // 主机及端口http://localhost:3000
 
 //axios默认配置请求的api基础地址
 axios.defaults.baseURL = BaseUrl;
@@ -13,17 +13,17 @@ axios.defaults.baseURL = BaseUrl;
 //头部配置
 function Headers() {
   var User = getItem();
-  var access_token : string;
-  access_token = "";
+  // var access_token: string;
+  // var access_token = "";
   if (User && User.access_token && User.access_token !== "") {
-    access_token = User.access_token;
+    // access_token = User.access_token;
   }
   // Vue.$http.default.headers.common['token'] = token;
   var cfg = {
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
       // 'Content-Type': 'multipart/form-data;'
-      "x-token": access_token,
+      // "x-token": access_token,
     },
     // timeout: 30e3 // 超时设置,超时进入错误回调，进行相关操作
     // 'Content-Type': 'application/x-www-form-urlencoded'
@@ -37,7 +37,11 @@ function Headers() {
  * @param {*} that
  * @param {*} receive
  */
-function PretreatmentData(then: { success: any; error?: any; }, that: { datas: any[]; data: {}; state: boolean; message: any; }, receive: { state: any; data: any; status: any; code: string | number; }) {
+function PretreatmentData(
+  then: { success: any; error?: any },
+  that: { datas: any[]; data: {}; state: boolean; message: any },
+  receive: { state: any; data: any; status: any; code: string | number }
+) {
   if (receive && receive.state) {
     if (Array.isArray(receive.data)) {
       //  true：数组  false：对象
@@ -68,7 +72,14 @@ function PretreatmentData(then: { success: any; error?: any; }, that: { datas: a
  * @param {*} that
  * @param {*} error
  */
-function ErrorPretreatmentData(then: { error: any; }, that: { datas: never[]; data: {}; state: boolean; message: any; reason: any; }, error: { message: any; response: { data: { Message: any; code: string | number; }; }; }) {
+function ErrorPretreatmentData(
+  then: { error: any },
+  that: { datas: never[]; data: {}; state: boolean; message: any; reason: any },
+  error: {
+    message: any;
+    response: { data: { Message: any; code: string | number } };
+  }
+) {
   that.datas = [];
   that.data = {};
   that.state = false;
@@ -87,7 +98,7 @@ function ErrorPretreatmentData(then: { error: any; }, that: { datas: never[]; da
  * @param {*} param
  * @returns
  */
-function ParseParam(param: { [x: string]: string; }) {
+function ParseParam(param: { [x: string]: string }) {
   var paramStr = "";
   for (const i in param) {
     if (paramStr === "") {
@@ -104,7 +115,11 @@ function ParseParam(param: { [x: string]: string; }) {
  * @param {*} then
  * @param {*} response
  */
-function SuccessPretreatment(this: any, then: { success: (arg0: any) => void; }, response: { data: any; }) {
+function SuccessPretreatment(
+  this: any,
+  then: { success: (arg0: any) => void },
+  response: { data: any }
+) {
   console.log(response);
   var receive = response ? response.data : response;
   if (IS_PRETREATMENT) {
@@ -120,7 +135,11 @@ function SuccessPretreatment(this: any, then: { success: (arg0: any) => void; },
  * @param {*} then
  * @param {*} error
  */
-function ErrorPretreatment(this: any, then: { error: (arg0: any) => void; }, error: any) {
+function ErrorPretreatment(
+  this: any,
+  then: { error: (arg0: any) => void },
+  error: any
+) {
   if (IS_PRETREATMENT) {
     // 预处理数据
     ErrorPretreatmentData(then, this, error);
@@ -133,31 +152,42 @@ function ErrorPretreatment(this: any, then: { error: (arg0: any) => void; }, err
  * 自定义http请求
  */
 class $http {
-  then!: (successCall?: () => void, errorCall?: () => void) => void;
-  private _httpDelete: (usr: any, condition?: any, config?: any) => Promise<never>;
-  private _httpPut: (usr: any, condition?: any, config?: any) => Promise<never>;
-  private _httpPost: (usr: any, condition?: any, config?: any) => Promise<never>;
-  private _httpGet: (usr: any, condition?: any, config?: any) => Promise<never>;
+  then!: (
+    successCall?: (response: any) => void,
+    errorCall?: (error: any) => void
+  ) => void;
+  _httpGet: (usr: string, condition?: any, config?: any) => this;
+  _httpPost: (usr: string, condition?: any, config?: any) => this;
+  _httpPut: (usr: string, condition?: any, config?: any) => this;
+  _httpDelete: (usr: string,condition?: any, config?: any) => this;
   constructor() {
     class then {
-      error: () => void;
-      success: () => void;
+      error: (error: any) => void;
+      success: (response: any) => void;
+      init: (
+        successCall?: ((response: any) => void) | undefined,
+        errorCall?: ((error: any) => void) | undefined
+      ) => void;
       constructor() {
         this.success = () => {};
         this.error = () => {};
+        this.init = (
+          successCall?: (response: any) => void,
+          errorCall?: (error: any) => void
+        ) => {
+          if (successCall) this.success = successCall;
+          if (errorCall) this.error = errorCall;
+        };
       }
     }
 
     // get请求
-    this._httpGet = async (usr, condition, config) => {
+    this._httpGet = (usr, condition, config) => {
       var cfg = config || Headers();
-      var _then = new then();
       //执行回调
-      this.then = (successCall = () => {}, errorCall = () => {}) => {
-        _then.success = successCall;
-        _then.error = errorCall;
-      };
-      await axios
+      var _then = new then();
+      this.then = _then.init;
+      axios
         .get(usr + ParseParam(condition), cfg)
         .then(
           SuccessPretreatment.bind(this, _then),
@@ -166,15 +196,12 @@ class $http {
       return this;
     };
     // post请求
-    this._httpPost = async (usr, condition, config) => {
+    this._httpPost = (usr, condition, config) => {
       var cfg = config || Headers();
-      var _then = new then();
       //执行回调
-      this.then = (successCall = () => {}, errorCall = () => {}) => {
-        _then.success = successCall;
-        _then.error = errorCall;
-      };
-      await axios
+      var _then = new then();
+      this.then = _then.init;
+      axios
         .post(usr, condition, cfg)
         .then(
           SuccessPretreatment.bind(this, _then),
@@ -183,15 +210,12 @@ class $http {
       return this;
     };
     // put请求
-    this._httpPut = async (usr, condition, config) => {
+    this._httpPut = (usr, condition, config) => {
       var cfg = config || Headers();
-      var _then = new then();
       //执行回调
-      this.then = (successCall = () => {}, errorCall = () => {}) => {
-        _then.success = successCall;
-        _then.error = errorCall;
-      };
-      await axios
+      var _then = new then();
+      this.then = _then.init;
+      axios
         .put(usr, condition, cfg)
         .then(
           SuccessPretreatment.bind(this, _then),
@@ -200,16 +224,13 @@ class $http {
       return this;
     };
     // delete请求
-    this._httpDelete = async (usr, config) => {
+    this._httpDelete = (usr, condition, config) => {
       var cfg = config || Headers();
+      //执行回调
       var _then = new then();
-      // 执行回调
-      this.then = (successCall = () => {}, errorCall = () => {}) => {
-        _then.success = successCall;
-        _then.error = errorCall;
-      };
-      await axios
-        .delete(usr, cfg)
+      this.then = _then.init;
+      axios
+        .delete(usr + ParseParam(condition), cfg)
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
@@ -232,7 +253,7 @@ axios.interceptors.response.use(
 
     return response;
   },
-  function (error: { response: { status: number; }; message: string; }) {
+  function (error: { response: { status: number }; message: string }) {
     if (error && error.response) {
       switch (error.response.status) {
         case 400:

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Form, Input, Button, Checkbox } from "antd";
-import utils from "../../request/index";
+import {addUser,getUser} from "./api";
 import styles from "./index.module.less";
 
 export default class Login extends Component {
@@ -42,25 +42,27 @@ export default class Login extends Component {
     // let navigate = useNavigate();
     // // 登陆成功之后的跳转
     // navigate(RedirectUrl);
-    window.location.href = "/";
- 
-    utils.$http._httpPost("/addUser",{username:username,password:password},{}).then(
-      (response) => {
-        console.log(response);
-      },
-      (error) => {
+    // window.location.href = "/";
+
+    addUser(username,password).then(
+      ({ data,message }) => {
+        console.log(data);
+      },  
+      (error: any) => {
         console.log(error);
       }
     );
-    // utils._httpGet("/getUser",{username:username,password:password}).then(
-    //   (response) => {
-    //     console.log(response);
-    //     window.location.href = "/";
-    //   },
-    //   (error) => {
-    //     console.log(error);
-    //   }
-    // );
+
+
+    getUser(username,password).then(
+      ({ data,message }) => {
+        console.log("response",data);
+        // window.location.href = "/";
+      }
+    );
+
+
+    console.log("测试测试测试测试测试");
     
 
   }
