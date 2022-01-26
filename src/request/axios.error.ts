@@ -1,5 +1,5 @@
 
-export const defaultHandler = {
+ const defaultHandler = {
 	400: function () {
 
 	},
@@ -9,7 +9,7 @@ export const defaultHandler = {
 	// ...更多其他HTTP错误码
 }
 
-export const commonErrHandler = {
+const commonErrHandler = {
 	400000: function () {
 		// 缺少参数, 有客户端必填验证则不会出现
 		// 前端代码没问题的情况下, 这里肯定是非法请求
@@ -43,7 +43,7 @@ export const commonErrHandler = {
 	},
 };
 
-export const passportErrHandler = {
+const passportErrHandler = {
 	400001:()=> {
 		// 验证码错误
 		// Vue.prototype.$message.error('验证码错误');
@@ -63,6 +63,9 @@ export const passportErrHandler = {
 		// 用户不存在
 		// Vue.prototype.$message.error('用户不存在');
 		// defaultHandler[404]()
+	},
+	600100:()=>{
+		
 	}
 };
 export const errorException = {

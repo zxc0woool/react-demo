@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Form, Input, Button, Checkbox } from "antd";
-import {addUser,getUser} from "./api";
+import { addUser, getUser } from "./api";
 import styles from "./index.module.less";
 
 export default class Login extends Component {
@@ -44,26 +44,29 @@ export default class Login extends Component {
     // navigate(RedirectUrl);
     // window.location.href = "/";
 
-    addUser(username,password).then(
-      ({ data,message }) => {
+    addUser({ username, password }).then(
+      (data) => {
+
         console.log(data);
-      },  
-      (error: any) => {
-        console.log(error);
+      },(e)=>{
+
       }
     );
 
 
-    getUser(username,password).then(
-      ({ data,message }) => {
-        console.log("response",data);
+    getUser({ username, password }).then(
+      (data) => {
+        console.log("response", data);
         // window.location.href = "/";
+      },(error)=>{
+        console.log(error);
+        
       }
     );
 
 
     console.log("测试测试测试测试测试");
-    
+
 
   }
   onFinish(values: any) {

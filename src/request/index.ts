@@ -1,8 +1,8 @@
 import axios from "axios";
 import { getItem } from "./auth";
-// import { errorException } from "./axios.error"; //http异常处理
+import { errorException } from "./axios.error"; //http异常处理
 
-const IS_PRETREATMENT = false; // 请求数据是否预处理
+const IS_PRETREATMENT = true; // 请求数据是否预处理
 
 // 请求路径
 const BaseUrl = "http://192.168.0.196:8099"; // 主机及端口http://localhost:3000
@@ -31,6 +31,10 @@ function Headers() {
   return cfg;
 }
 
+function onValidKey(key: string | number | symbol , object: any): key is keyof typeof object {
+  return object[key];
+}
+
 /**
  * 预处理请求数据库返回的数据
  * @param {*} then
@@ -40,7 +44,7 @@ function Headers() {
 function PretreatmentData(
   then: { success: any; error?: any },
   that: { datas: any[]; data: {}; state: boolean; message: any },
-  receive: { state: any; data: any; status: any; code: string | number }
+  receive: any
 ) {
   if (receive && receive.state) {
     if (Array.isArray(receive.data)) {
@@ -60,8 +64,8 @@ function PretreatmentData(
     that.state = false;
     that.state = receive.state;
     that.message = receive.status ? receive.status : "操作失败";
-    // var Exception = errorException[receive.code];
-    // if (typeof Exception === "function") Exception();
+    let Exception = onValidKey(receive.code, errorException) as any ;
+    if (typeof Exception === "function") Exception();
     then.error(that);
   }
 }
@@ -75,10 +79,7 @@ function PretreatmentData(
 function ErrorPretreatmentData(
   then: { error: any },
   that: { datas: never[]; data: {}; state: boolean; message: any; reason: any },
-  error: {
-    message: any;
-    response: { data: { Message: any; code: string | number } };
-  }
+  error: any
 ) {
   that.datas = [];
   that.data = {};
@@ -87,8 +88,8 @@ function ErrorPretreatmentData(
   // that.code = error.response.data.err_code;
   try {
     that.reason = error.response.data.Message;
-    // var Exception = errorException()[error.response.data.code];
-    // if (typeof Exception === "function") Exception();
+    let Exception = onValidKey(error.response.code, errorException) as any ;
+    if (typeof Exception === "function") Exception();
     then.error(that);
   } catch (err) {}
 }
@@ -148,6 +149,11 @@ function ErrorPretreatment(
   }
 }
 
+
+interface HttpParameter{
+  usr: string, condition?: any, config?: any
+}
+
 /**
  * 自定义http请求
  */
@@ -156,10 +162,12 @@ class $http {
     successCall?: (response: any) => void,
     errorCall?: (error: any) => void
   ) => void;
-  _httpGet: (usr: string, condition?: any, config?: any) => this;
+
+  _httpGet : (usr: string, condition?: any, config?: any) => this;
   _httpPost: (usr: string, condition?: any, config?: any) => this;
   _httpPut: (usr: string, condition?: any, config?: any) => this;
-  _httpDelete: (usr: string,condition?: any, config?: any) => this;
+  _httpDelete: (usr: string, condition?: any, config?: any) => this;
+
   constructor() {
     class then {
       error: (error: any) => void;
@@ -181,7 +189,9 @@ class $http {
       }
     }
 
-    // get请求
+    /**
+     * get请求
+     */
     this._httpGet = (usr, condition, config) => {
       var cfg = config || Headers();
       //执行回调
@@ -195,7 +205,10 @@ class $http {
         );
       return this;
     };
-    // post请求
+
+    /**
+     * post请求
+     */
     this._httpPost = (usr, condition, config) => {
       var cfg = config || Headers();
       //执行回调
@@ -209,7 +222,10 @@ class $http {
         );
       return this;
     };
-    // put请求
+
+    /**
+     * put请求
+     */
     this._httpPut = (usr, condition, config) => {
       var cfg = config || Headers();
       //执行回调
@@ -223,7 +239,10 @@ class $http {
         );
       return this;
     };
-    // delete请求
+
+    /**
+     * delete请求
+     */
     this._httpDelete = (usr, condition, config) => {
       var cfg = config || Headers();
       //执行回调

@@ -4,6 +4,7 @@ import ErrorPage from "../page/error";
 import Login from "../page/login";
 
 /**
+ * 路由配置
  * @param {*} path 路由名称
  * @param {*} element 页面内容
  * @param {*} auth 是否授权 授权后可跳过认证

@@ -44,3 +44,33 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+
+## 目录结构说明
+
+config:                       项目配置
+build:                        打包目录
+doc:                          存放文档的目录
+node_modules:                 node_modules覆盖目录
+src:                          开发目录  所有源代码存放的路径
+    components:               组件（全局组件，全局方法）
+        Home                  例如，则在components/中就有一个名为Home的子文件夹的组件
+            index.js          例如：一个列表组件
+            index.module.less 列表组件对应的样式
+    page:                     页面组件
+        login
+            index.js          例如，登录页面的入口就是page/login
+            index.module.less 页面对应的样式
+            api.js            相对应的API接口方法
+    static:                   第三方文件存放地 如：图片等
+    app.less:                 总样式入口
+    app.tsx:                  js入口
+    router:                   路由配置
+        FrontendAuth:         路由逻辑实现
+        router:               路由配置文件
+
+## 前端组件列表
+## Ant Design of React
+[Antd](https://ant.design/docs/react/introduce-cn)
+[Antd组件总览](https://ant.design/components/overview-cn/)
+

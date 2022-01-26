@@ -1,15 +1,10 @@
-import utils from "../../request/index";
+import $http from "../../request/index";
 
-
-
-export function addUser(username: string, password: string) {
-  return utils._httpPost(
-    "/addUser",
-    { username: username, password: password },
-    {}
-  );
+interface UserInfo {
+  username: string, 
+  password: string
 }
 
-export function getUser(username: string, password: string) {
-  return utils._httpGet("/getUser", { username: username, password: password });
-}
+export const addUser = (data:UserInfo) => $http._httpPost( "/addUser", {...data })
+
+export const getUser = (data:UserInfo) => $http._httpGet( "/getUser",{...data })
