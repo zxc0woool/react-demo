@@ -150,11 +150,6 @@ function ErrorPretreatment(
   }
 }
 
-
-interface HttpParameter{
-  usr: string, condition?: any, config?: any
-}
-
 /**
  * 自定义http请求
  */
@@ -263,7 +258,7 @@ class $http {
 /* 响应拦截器 */
 axios.interceptors.response.use(
   (response: any) => {
-    
+
     let token = getLocal("token");
     if (token != null) {
       response.headers["token"] = token;
