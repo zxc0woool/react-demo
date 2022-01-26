@@ -12,20 +12,20 @@ export function audioPlay(mp3: string) {
 /*
  * 获取getItem
  * */
-export function getItem(Key?: string | undefined) {
-  return sessionStorage.getItem(Key ? Key : TokenKey) as any;
+export function getLocal(Key?: string | undefined) {
+  return localStorage.getItem(Key ? Key : TokenKey) as any;
 }
 /*
  * 设置setItem
  * */
-export function setItem(token: string, Key: string) {
-  return sessionStorage.setItem(Key ? Key : TokenKey, token);
+export function setLocal(token: string, Key?: string) {
+  return localStorage.setItem(Key ? Key : TokenKey, token);
 }
 /*
  * 移除removeItem
  * */
-export function removeItem(Key: string) {
-  return sessionStorage.removeItem(Key ? Key : TokenKey);
+export function removeLocal(Key?: string) {
+  return localStorage.removeItem(Key ? Key : TokenKey);
 }
 
 /*

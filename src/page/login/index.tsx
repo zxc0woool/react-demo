@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Form, Input, Button, Checkbox } from "antd";
 import { addUser, getUser } from "./api";
 import styles from "./index.module.less";
+import { setLocal } from "../../request/auth";
 
 export default class Login extends Component {
   constructor(props: any) {
@@ -32,8 +33,9 @@ export default class Login extends Component {
     if (!values.remember) {
 
     }
-    // 保存信息到sessionStorage
-    sessionStorage.setItem("username", username);
+    // 保存信息到Local
+    setLocal(username);
+    // localStorage.setItem("username", username);
     // 登录成功后，设置redirectToReferrer为true;
     this.setState({
       rediectToReferrer: true,

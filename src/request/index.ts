@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getItem } from "./auth";
+import { getLocal } from "./auth";
 import { errorException } from "./axios.error"; //http异常处理
 
 const IS_PRETREATMENT = true; // 请求数据是否预处理
@@ -12,7 +12,7 @@ axios.defaults.baseURL = BaseUrl;
 
 //头部配置
 function Headers() {
-  var User = getItem();
+  var User = getLocal();
   // var access_token: string;
   // var access_token = "";
   if (User && User.access_token && User.access_token !== "") {
@@ -99,7 +99,7 @@ function ErrorPretreatmentData(
  * @param {*} param
  * @returns
  */
-function ParseParam(param: { [x: string]: string }) {
+function ParseParam(param: any) {
   var paramStr = "";
   for (const i in param) {
     if (paramStr === "") {
@@ -121,7 +121,7 @@ function SuccessPretreatment(
   then: { success: (arg0: any) => void },
   response: { data: any }
 ) {
-  console.log(response);
+  console.log("Success>>>>>>\n",response);
   var receive = response ? response.data : response;
   if (IS_PRETREATMENT) {
     // 预处理数据
@@ -141,6 +141,7 @@ function ErrorPretreatment(
   then: { error: (arg0: any) => void },
   error: any
 ) {
+  console.log("Error>>>>>>\n",error);
   if (IS_PRETREATMENT) {
     // 预处理数据
     ErrorPretreatmentData(then, this, error);
@@ -262,6 +263,12 @@ class $http {
 /* 响应拦截器 */
 axios.interceptors.response.use(
   (response: any) => {
+    
+    let token = getLocal("token");
+    if (token != null) {
+      response.headers["token"] = token;
+    }
+
     // let token = localStorage.getItem("x-auth-token");
 
     // if (token) {  // 判断是否存在token，如果存在的话，则每个http header都加上token

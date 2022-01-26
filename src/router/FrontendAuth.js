@@ -1,13 +1,14 @@
 import { Component } from "react";
 import { Route, Navigate, Routes } from "react-router-dom";
-
-/**
+import { getLocal } from "../request/auth";
+/** 
  * 路由请求授权
  * @param {*} children
  * @returns
  */
 function RequireAuth({ children }) {
-  const isLogin = sessionStorage.getItem("username");
+  
+  const isLogin = getLocal();
   if (isLogin) {
     // 如果是登陆状态，想要跳转到登陆，重定向到主页
     if (children.type.name === "Login") {
@@ -27,7 +28,7 @@ function RequireAuth({ children }) {
  export default class FrontendAuth extends Component {
   render() {
     const { routerConfig } = this.props;
-    const isLogin = sessionStorage.getItem("username");
+    const isLogin = getLocal();
 
     function getRouter(params) {
       return params.map((item, index) => {

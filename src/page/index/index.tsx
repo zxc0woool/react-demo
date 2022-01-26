@@ -2,6 +2,7 @@ import { Component } from "react";
 import { Link } from "react-router-dom";
 import styles from "./index.module.less";
 import { Button, DatePicker, version } from "antd";
+import { removeLocal } from "../../request/auth";
 
 export default class Index extends Component {
   constructor(props: any) {
@@ -11,7 +12,12 @@ export default class Index extends Component {
     }
   }
   onLogOut(){
-    sessionStorage.removeItem("username");
+
+    // 清理缓存
+    removeLocal();
+    removeLocal("token");
+    
+    // 跳转到登录页面
     window.location.href = '/login';
   }
   render() {
