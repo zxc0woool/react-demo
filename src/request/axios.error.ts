@@ -1,14 +1,4 @@
 
- const defaultHandler = {
-	400: function () {
-
-	},
-	401: function () {
-
-	},
-	// ...更多其他HTTP错误码
-}
-
 const commonErrHandler = {
 	400000: function () {
 		// 缺少参数, 有客户端必填验证则不会出现
@@ -47,22 +37,18 @@ const passportErrHandler = {
 	400001:()=> {
 		// 验证码错误
 		// Vue.prototype.$message.error('验证码错误');
-		// defaultHandler[400]()
 	},
 	401002: function () {
 		// Token刷新失败
 		// Vue.prototype.$message.error('Token刷新失败');
-		// defaultHandler[401]()
 	},
 	403001: function () {
 		// 用户已禁用
 		// Vue.prototype.$message.error('用户已禁用');
-		// defaultHandler[403]()
 	},
 	404001: function () {
 		// 用户不存在
 		// Vue.prototype.$message.error('用户不存在');
-		// defaultHandler[404]()
 	},
 	600100:()=>{
 		
