@@ -1,19 +1,18 @@
 import axios from "axios";
 import { getLocal } from "./auth";
+import comm from "./comm";
 import { errorException } from "./axios.error"; //http异常处理
 
 const IS_PRETREATMENT = true; // 请求数据是否预处理
 
 // 请求路径
-const BaseUrl = "http://192.168.0.196:8099"; // 主机及端口http://localhost:3000
+const BaseUrl = "http://" + comm.SERVER_IP + ":" + comm.SERVER_PORT; // 主机及端口
 
 //axios默认配置请求的api基础地址
-axios.defaults.baseURL = BaseUrl;
-
+axios.defaults.baseURL = comm.IS_DEV ? BaseUrl : comm.SERVER_ADDRESS;
 
 const TOKEN_NAME = "token"; // token
 const TOKEN_USER_ACCES = "access_token"; // 用户 对象保存的token 字段
-
 
 //头部配置
 function Headers() {
@@ -29,48 +28,50 @@ function Headers() {
       // 'Content-Type': 'application/x-www-form-urlencoded'
       "x-token": access_token,
     },
-    timeout: 0 // 30e3 超时设置,超时进入错误回调，进行相关操作
+    timeout: 0, // 30e3 超时设置,超时进入错误回调，进行相关操作
   };
   return cfg;
 }
 
 // ajax请求统一增加请求头
-axios.interceptors.request.use(config => {
+axios.interceptors.request.use(
+  (config) => {
+    let cfg = Headers();
+    config.headers = {
+      ...config.headers,
+      ...cfg.headers,
+    };
 
-  let cfg = Headers();
-  config.headers = {
-    ...config.headers,
-    ...cfg.headers
+    config.timeout = cfg.timeout;
+
+    // console.log(token);
+
+    let str_data = JSON.stringify(config.data || "{}");
+    // 参数中携带cancelHttp，不防止多次请求
+    if (str_data.indexOf("cancelHttp") > -1) {
+    } else {
+    }
+    return config;
+  },
+  (err) => {
+    return null;
   }
+);
 
-  config.timeout = cfg.timeout;
-
-   // console.log(token);
-  
-  let str_data = JSON.stringify(config.data || '{}');
-  // 参数中携带cancelHttp，不防止多次请求
-  if (str_data.indexOf("cancelHttp") > -1) {
-   
-  }else {
-    
-  }
-  return config
-},
-err => {
-  return null
-})
-
-function onValidKey(key: string | number | symbol , object: any): key is keyof typeof object {
+function onValidKey(
+  key: string | number | symbol,
+  object: any
+): key is keyof typeof object {
   return object[key];
 }
 
 //返回参数
 interface RequestData {
-  data: any
-  datas: any[]
-  message: string
-  state: boolean,
-  reason: string
+  data: any;
+  datas: any[];
+  message: string;
+  state: boolean;
+  reason: string;
 }
 
 /**
@@ -102,7 +103,7 @@ function PretreatmentData(
     that.state = false;
     that.state = receive.state;
     that.message = receive.status ? receive.status : "操作失败";
-    let Exception = onValidKey(receive.code, errorException) as any ;
+    let Exception = onValidKey(receive.code, errorException) as any;
     if (typeof Exception === "function") Exception();
     then.error(that);
   }
@@ -126,7 +127,7 @@ function ErrorPretreatmentData(
   // that.code = error.response.data.err_code;
   try {
     that.reason = error.response.data.Message;
-    let Exception = onValidKey(error.response.code, errorException) as any ;
+    let Exception = onValidKey(error.response.code, errorException) as any;
     if (typeof Exception === "function") Exception();
     then.error(that);
   } catch (err) {}
@@ -159,7 +160,7 @@ function SuccessPretreatment(
   then: { success: (arg0: any) => void },
   response: { data: any }
 ) {
-  console.log("Success>>>>>>\n",response);
+  console.log("Success>>>>>>\n", response);
   let receive = response ? response.data : response;
   if (IS_PRETREATMENT) {
     // 预处理数据
@@ -179,7 +180,7 @@ function ErrorPretreatment(
   then: { error: (arg0: any) => void },
   error: any
 ) {
-  console.log("Error>>>>>>\n",error);
+  console.log("Error>>>>>>\n", error);
   if (IS_PRETREATMENT) {
     // 预处理数据
     ErrorPretreatmentData(then, {} as RequestData, error);
@@ -225,7 +226,7 @@ class $http {
     /**
      * get请求
      */
-    this._httpGet = (usr, condition,) => {
+    this._httpGet = (usr, condition) => {
       //执行回调
       let _then = new then();
       this.then = _then.init;
