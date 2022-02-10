@@ -278,7 +278,7 @@ class $http {
       let _then = new then();
       this.then = _then.init;
       axios
-        .delete(usr + ParseParam(condition))
+        .delete(usr, condition)
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
