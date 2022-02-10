@@ -10,29 +10,67 @@ const BaseUrl = "http://192.168.0.196:8099"; // 主机及端口http://localhost:
 //axios默认配置请求的api基础地址
 axios.defaults.baseURL = BaseUrl;
 
+
+const TOKEN_NAME = "token"; // token
+const TOKEN_USER_ACCES = "access_token"; // 用户 对象保存的token 字段
+
+
 //头部配置
 function Headers() {
-  var User = getLocal();
-  // var access_token: string;
-  // var access_token = "";
-  if (User && User.access_token && User.access_token !== "") {
-    // access_token = User.access_token;
+  let User = getLocal();
+  let access_token = "";
+  if (User && User[TOKEN_USER_ACCES] && User[TOKEN_USER_ACCES] !== "") {
+    access_token = User[TOKEN_USER_ACCES];
   }
-  // Vue.$http.default.headers.common['token'] = token;
-  var cfg = {
+  let cfg = {
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
       // 'Content-Type': 'multipart/form-data;'
-      // "x-token": access_token,
+      // 'Content-Type': 'application/x-www-form-urlencoded'
+      "x-token": access_token,
     },
-    // timeout: 30e3 // 超时设置,超时进入错误回调，进行相关操作
-    // 'Content-Type': 'application/x-www-form-urlencoded'
+    timeout: 0 // 30e3 超时设置,超时进入错误回调，进行相关操作
   };
   return cfg;
 }
 
+// ajax请求统一增加请求头
+axios.interceptors.request.use(config => {
+
+  let cfg = Headers();
+  config.headers = {
+    ...config.headers,
+    ...cfg.headers
+  }
+
+  config.timeout = cfg.timeout;
+
+   // console.log(token);
+  
+  let str_data = JSON.stringify(config.data || '{}');
+  // 参数中携带cancelHttp，不防止多次请求
+  if (str_data.indexOf("cancelHttp") > -1) {
+   
+  }else {
+    
+  }
+  return config
+},
+err => {
+  return null
+})
+
 function onValidKey(key: string | number | symbol , object: any): key is keyof typeof object {
   return object[key];
+}
+
+//返回参数
+interface RequestData {
+  data: any
+  datas: any[]
+  message: string
+  state: boolean,
+  reason: string
 }
 
 /**
@@ -43,7 +81,7 @@ function onValidKey(key: string | number | symbol , object: any): key is keyof t
  */
 function PretreatmentData(
   then: { success: any; error?: any },
-  that: { datas: any[]; data: {}; state: boolean; message: any },
+  that: RequestData,
   receive: any
 ) {
   if (receive && receive.state) {
@@ -78,7 +116,7 @@ function PretreatmentData(
  */
 function ErrorPretreatmentData(
   then: { error: any },
-  that: { datas: never[]; data: {}; state: boolean; message: any; reason: any },
+  that: RequestData,
   error: any
 ) {
   that.datas = [];
@@ -100,7 +138,7 @@ function ErrorPretreatmentData(
  * @returns
  */
 function ParseParam(param: any) {
-  var paramStr = "";
+  let paramStr = "";
   for (const i in param) {
     if (paramStr === "") {
       paramStr += "?" + i + "=" + param[i];
@@ -122,10 +160,10 @@ function SuccessPretreatment(
   response: { data: any }
 ) {
   console.log("Success>>>>>>\n",response);
-  var receive = response ? response.data : response;
+  let receive = response ? response.data : response;
   if (IS_PRETREATMENT) {
     // 预处理数据
-    PretreatmentData(then, this, receive);
+    PretreatmentData(then, {} as RequestData, receive);
   } else {
     then.success(receive);
   }
@@ -144,7 +182,7 @@ function ErrorPretreatment(
   console.log("Error>>>>>>\n",error);
   if (IS_PRETREATMENT) {
     // 预处理数据
-    ErrorPretreatmentData(then, this, error);
+    ErrorPretreatmentData(then, {} as RequestData, error);
   } else {
     then.error(error);
   }
@@ -158,11 +196,10 @@ class $http {
     successCall?: (response: any) => void,
     errorCall?: (error: any) => void
   ) => void;
-
-  _httpGet : (usr: string, condition?: any, config?: any) => this;
-  _httpPost: (usr: string, condition?: any, config?: any) => this;
-  _httpPut: (usr: string, condition?: any, config?: any) => this;
-  _httpDelete: (usr: string, condition?: any, config?: any) => this;
+  _httpGet: (usr: any, condition: any) => this;
+  _httpPost: (usr: any, condition: any) => this;
+  _httpPut: (usr: any, condition: any) => this;
+  _httpDelete: (usr: any, condition: any) => this;
 
   constructor() {
     class then {
@@ -188,13 +225,12 @@ class $http {
     /**
      * get请求
      */
-    this._httpGet = (usr, condition, config) => {
-      var cfg = config || Headers();
+    this._httpGet = (usr, condition,) => {
       //执行回调
-      var _then = new then();
+      let _then = new then();
       this.then = _then.init;
       axios
-        .get(usr + ParseParam(condition), cfg)
+        .get(usr + ParseParam(condition))
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
@@ -205,13 +241,12 @@ class $http {
     /**
      * post请求
      */
-    this._httpPost = (usr, condition, config) => {
-      var cfg = config || Headers();
+    this._httpPost = (usr, condition) => {
       //执行回调
-      var _then = new then();
+      let _then = new then();
       this.then = _then.init;
       axios
-        .post(usr, condition, cfg)
+        .post(usr, condition)
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
@@ -222,13 +257,12 @@ class $http {
     /**
      * put请求
      */
-    this._httpPut = (usr, condition, config) => {
-      var cfg = config || Headers();
+    this._httpPut = (usr, condition) => {
       //执行回调
-      var _then = new then();
+      let _then = new then();
       this.then = _then.init;
       axios
-        .put(usr, condition, cfg)
+        .put(usr, condition)
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
@@ -239,13 +273,12 @@ class $http {
     /**
      * delete请求
      */
-    this._httpDelete = (usr, condition, config) => {
-      var cfg = config || Headers();
+    this._httpDelete = (usr, condition) => {
       //执行回调
-      var _then = new then();
+      let _then = new then();
       this.then = _then.init;
       axios
-        .delete(usr + ParseParam(condition), cfg)
+        .delete(usr + ParseParam(condition))
         .then(
           SuccessPretreatment.bind(this, _then),
           ErrorPretreatment.bind(this, _then)
@@ -258,20 +291,7 @@ class $http {
 /* 响应拦截器 */
 axios.interceptors.response.use(
   (response: any) => {
-
-    let token = getLocal("token");
-    if (token != null) {
-      response.headers["token"] = token;
-    }
-
-    // let token = localStorage.getItem("x-auth-token");
-
-    // if (token) {  // 判断是否存在token，如果存在的话，则每个http header都加上token
-    //     response.headers.token = `${token}`;
-    // }else{
-    //     response.headers.token = response.data.Token
-    // }
-
+    // 请求成功后拦截预处理
     return response;
   },
   function (error: { response: { status: number }; message: string }) {

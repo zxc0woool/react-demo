@@ -47,7 +47,7 @@ export default class Login extends Component {
     // window.location.href = "/";
 
     addUser({ username, password }).then(
-      (data) => {
+      ({data,datas}) => {
 
         console.log(data);
       },(e)=>{
