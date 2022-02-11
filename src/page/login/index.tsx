@@ -47,28 +47,24 @@ export default class Login extends Component {
     // window.location.href = "/";
 
     addUser({ username, password }).then(
-      ({data,datas}) => {
+      (data) => {
 
         console.log(data);
-      },(e)=>{
-
       }
-    );
+    ).shutPretreatment();
 
-
-    getUser({ username, password }).then(
+    
+   let user =  getUser({ username, password }).then(
       (data) => {
         console.log("response", data);
-        // window.location.href = "/";
+        // window.location.href = "/"; 
       },(error)=>{
         console.log(error);
         
       }
     );
-
-
-    console.log("测试测试测试测试测试");
-
+    // console.log(user);
+    debugger
 
   }
   onFinish(values: any) {

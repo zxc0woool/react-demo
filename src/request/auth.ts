@@ -15,12 +15,14 @@ export function audioPlay(mp3: string) {
 export function getLocal(Key?: string | undefined) {
   return localStorage.getItem(Key ? Key : TokenKey) as any;
 }
+
 /*
  * 设置setItem
  * */
-export function setLocal(token: string, Key?: string) {
-  return localStorage.setItem(Key ? Key : TokenKey, token);
+export function setLocal(params: any, Key?: string) {
+  return localStorage.setItem(Key ? Key : TokenKey, params);
 }
+
 /*
  * 移除removeItem
  * */

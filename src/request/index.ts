@@ -1,35 +1,37 @@
 import axios from "axios";
 import { getLocal } from "./auth";
-import comm from "./comm";
+import COMM from "./comm";
 import { errorException } from "./axios.error"; //http异常处理
 
-const IS_PRETREATMENT = true; // 请求数据是否预处理
 
 // 请求路径
-const BaseUrl = "http://" + comm.SERVER_IP + ":" + comm.SERVER_PORT; // 主机及端口
+const BaseUrl = "http://" + COMM.SERVER_IP + ":" + COMM.SERVER_PORT; // 主机及端口
 
 //axios默认配置请求的api基础地址
-axios.defaults.baseURL = comm.IS_DEV ? BaseUrl : comm.SERVER_ADDRESS;
+axios.defaults.baseURL = COMM.IS_DEV ? BaseUrl : COMM.SERVER_ADDRESS;
 
-const TOKEN_NAME = "token"; // token
-const TOKEN_USER_ACCES = "access_token"; // 用户 对象保存的token 字段
+// const TOKEN_NAME = "token"; // token
 
 //头部配置
 function Headers() {
   let User = getLocal();
   let access_token = "";
-  if (User && User[TOKEN_USER_ACCES] && User[TOKEN_USER_ACCES] !== "") {
-    access_token = User[TOKEN_USER_ACCES];
+  if (User && User[COMM.TOKEN_USER_ACCES] && User[COMM.TOKEN_USER_ACCES] !== "") {
+    access_token = User[COMM.TOKEN_USER_ACCES];
   }
-  let cfg = {
+
+  let cfg: any = {
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
       // 'Content-Type': 'multipart/form-data;'
       // 'Content-Type': 'application/x-www-form-urlencoded'
-      "x-token": access_token,
     },
     timeout: 0, // 30e3 超时设置,超时进入错误回调，进行相关操作
   };
+
+  // 添加 token
+  cfg.headers[COMM.TOKEN_USER_ACCES_FIELD] = access_token;
+
   return cfg;
 }
 
@@ -157,12 +159,12 @@ function ParseParam(param: any) {
  */
 function SuccessPretreatment(
   this: any,
-  then: { success: (arg0: any) => void },
+  then: {isPretreatment:boolean, success: (arg0: any) => void },
   response: { data: any }
 ) {
   console.log("Success>>>>>>\n", response);
   let receive = response ? response.data : response;
-  if (IS_PRETREATMENT) {
+  if (then.isPretreatment) {
     // 预处理数据
     PretreatmentData(then, {} as RequestData, receive);
   } else {
@@ -177,11 +179,11 @@ function SuccessPretreatment(
  */
 function ErrorPretreatment(
   this: any,
-  then: { error: (arg0: any) => void },
+  then: {isPretreatment:boolean, error: (arg0: any) => void },
   error: any
 ) {
   console.log("Error>>>>>>\n", error);
-  if (IS_PRETREATMENT) {
+  if (then.isPretreatment) {
     // 预处理数据
     ErrorPretreatmentData(then, {} as RequestData, error);
   } else {
@@ -189,39 +191,86 @@ function ErrorPretreatment(
   }
 }
 
+
+/**
+ * 配置方法
+ */
+class configureHttp {
+
+  /**
+   * 请求数据是否预处理 
+   */
+  isPretreatment: boolean;
+
+  /**
+   * 打开预处理数据
+   */
+   openPretreatment: () => void;
+  
+  /**
+   * 关闭预处理数据
+   */
+  shutPretreatment: () => void;
+
+  constructor() {
+    this.isPretreatment = COMM.IS_PRETREATMENT
+    this.openPretreatment = () => {
+      this.isPretreatment = true;
+      return this;
+    }
+    this.shutPretreatment = () => {
+      this.isPretreatment = false;
+      return this;
+    }
+  }
+
+}
+
+/**
+ * 返回数据
+ */
+class then extends configureHttp {
+
+  /**
+   * 成功返回
+   */
+  success: (response: any) => void;
+
+  /**
+   * 错误返回
+   */
+  error: (error: any) => void;
+
+  /**
+   * 挂载方法
+   */
+  init: ( successCall?: ((response: any) => void) | undefined, errorCall?: ((error: any) => void) | undefined ) => then;
+  constructor() {
+    super();
+    this.success = () => {};
+    this.error = () => {};
+    this.init = ( successCall?: (response: any) => void, errorCall?: (error: any) => void ) => {
+      if (successCall) this.success = successCall;
+      if (errorCall) this.error = errorCall;
+      return this;
+    };
+  }
+
+}
+
+
 /**
  * 自定义http请求
  */
 class $http {
-  then!: (
-    successCall?: (response: any) => void,
-    errorCall?: (error: any) => void
-  ) => void;
+  then!: ( successCall?: (response: any) => void,  errorCall?: (error: any) => void ) => then;
   _httpGet: (usr: any, condition: any) => this;
   _httpPost: (usr: any, condition: any) => this;
   _httpPut: (usr: any, condition: any) => this;
   _httpDelete: (usr: any, condition: any) => this;
 
   constructor() {
-    class then {
-      error: (error: any) => void;
-      success: (response: any) => void;
-      init: (
-        successCall?: ((response: any) => void) | undefined,
-        errorCall?: ((error: any) => void) | undefined
-      ) => void;
-      constructor() {
-        this.success = () => {};
-        this.error = () => {};
-        this.init = (
-          successCall?: (response: any) => void,
-          errorCall?: (error: any) => void
-        ) => {
-          if (successCall) this.success = successCall;
-          if (errorCall) this.error = errorCall;
-        };
-      }
-    }
+ 
 
     /**
      * get请求
