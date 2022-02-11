@@ -3,7 +3,7 @@ const isDev = process.env.NODE_ENV === "development";
 const module = {
 
   SERVER_IP: "192.168.0.196",                   // 测试服务器端地址
-  // SERVER_PORT: process.env.PORT || 8001,
+
   SERVER_PORT: 8099,                            // 测试服务器端口号
 
   IS_DEV: isDev,                                // 是否开发模式

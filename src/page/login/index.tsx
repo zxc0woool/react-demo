@@ -54,7 +54,7 @@ export default class Login extends Component {
     ).shutPretreatment();
 
     
-   let user =  getUser({ username, password }).then(
+   getUser({ username, password }).then(
       (data) => {
         console.log("response", data);
         // window.location.href = "/"; 
@@ -62,7 +62,9 @@ export default class Login extends Component {
         console.log(error);
         
       }
-    );
+    ).success = (response: any)=>{
+      console.log(response);
+    };
     // console.log(user);
     debugger
 

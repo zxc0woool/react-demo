@@ -158,7 +158,6 @@ function ParseParam(param: any) {
  * @param {*} response
  */
 function SuccessPretreatment(
-  this: any,
   then: {isPretreatment:boolean, success: (arg0: any) => void },
   response: { data: any }
 ) {
@@ -178,7 +177,6 @@ function SuccessPretreatment(
  * @param {*} error
  */
 function ErrorPretreatment(
-  this: any,
   then: {isPretreatment:boolean, error: (arg0: any) => void },
   error: any
 ) {
@@ -205,12 +203,12 @@ class configureHttp {
   /**
    * 打开预处理数据
    */
-   openPretreatment: () => void;
+   openPretreatment: () => any;
   
   /**
    * 关闭预处理数据
    */
-  shutPretreatment: () => void;
+  shutPretreatment: () => any;
 
   constructor() {
     this.isPretreatment = COMM.IS_PRETREATMENT
@@ -244,96 +242,88 @@ class then extends configureHttp {
   /**
    * 挂载方法
    */
-  init: ( successCall?: ((response: any) => void) | undefined, errorCall?: ((error: any) => void) | undefined ) => then;
-  constructor() {
+  then: ( successCall?: ((response: any) => void) | undefined, errorCall?: ((error: any) => void) | undefined ) => then;
+  
+  constructor(executor:any) {
     super();
     this.success = () => {};
     this.error = () => {};
-    this.init = ( successCall?: (response: any) => void, errorCall?: (error: any) => void ) => {
+    this.then = ( successCall?: (response: any) => void, errorCall?: (error: any) => void ) => {
       if (successCall) this.success = successCall;
       if (errorCall) this.error = errorCall;
       return this;
     };
+    executor(this)
   }
 
 }
+
 
 
 /**
  * 自定义http请求
  */
 class $http {
-  then!: ( successCall?: (response: any) => void,  errorCall?: (error: any) => void ) => then;
-  _httpGet: (usr: any, condition: any) => this;
-  _httpPost: (usr: any, condition: any) => this;
-  _httpPut: (usr: any, condition: any) => this;
-  _httpDelete: (usr: any, condition: any) => this;
+  _httpGet: (usr: any, condition: any) => then;
+  _httpPut: (usr: any, condition: any) => then;
+  _httpDelete: (usr: any, condition: any) => then;
+  _httpPost: (usr: any, condition: any) => then;
 
   constructor() {
- 
-
     /**
      * get请求
      */
     this._httpGet = (usr, condition) => {
-      //执行回调
-      let _then = new then();
-      this.then = _then.init;
-      axios
-        .get(usr + ParseParam(condition))
-        .then(
-          SuccessPretreatment.bind(this, _then),
-          ErrorPretreatment.bind(this, _then)
-        );
-      return this;
+      return new then((then: any) => {
+        axios
+          .get(usr + ParseParam(condition))
+          .then(
+            SuccessPretreatment.bind(this, then),
+            ErrorPretreatment.bind(this, then)
+          );
+      });
     };
 
     /**
      * post请求
      */
     this._httpPost = (usr, condition) => {
-      //执行回调
-      let _then = new then();
-      this.then = _then.init;
-      axios
-        .post(usr, condition)
-        .then(
-          SuccessPretreatment.bind(this, _then),
-          ErrorPretreatment.bind(this, _then)
-        );
-      return this;
+      return new then((then: any) => {
+        axios
+          .post(usr, condition)
+          .then(
+            SuccessPretreatment.bind(this, then),
+            ErrorPretreatment.bind(this, then)
+          );
+      });
     };
 
     /**
      * put请求
      */
     this._httpPut = (usr, condition) => {
-      //执行回调
-      let _then = new then();
-      this.then = _then.init;
-      axios
-        .put(usr, condition)
-        .then(
-          SuccessPretreatment.bind(this, _then),
-          ErrorPretreatment.bind(this, _then)
-        );
-      return this;
+      return new then((then: any) => {
+        axios
+          .post(usr, condition)
+          .then(
+            SuccessPretreatment.bind(this, then),
+            ErrorPretreatment.bind(this, then)
+          );
+      });
     };
 
     /**
      * delete请求
      */
     this._httpDelete = (usr, condition) => {
-      //执行回调
-      let _then = new then();
-      this.then = _then.init;
-      axios
-        .delete(usr, condition)
-        .then(
-          SuccessPretreatment.bind(this, _then),
-          ErrorPretreatment.bind(this, _then)
-        );
-      return this;
+      return new then((then: any) => {
+        axios
+          .post(usr, condition)
+          .then(
+            SuccessPretreatment.bind(this, then),
+            ErrorPretreatment.bind(this, then)
+          );
+      });
     };
   }
 }
