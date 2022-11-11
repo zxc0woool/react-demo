@@ -74,3 +74,8 @@ src:                          开发目录  所有源代码存放的路径
 [Antd](https://ant.design/docs/react/introduce-cn)
 [Antd组件总览](https://ant.design/components/overview-cn/)
 
+## 更新package所有的依赖
+
+ **npm install -g npm-check-updates**
+``ncu -u``
+``npm install`` 

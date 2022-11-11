@@ -48,23 +48,19 @@ export default class Login extends Component {
 
     addUser({ username, password }).then(
       (data) => {
-
         console.log(data);
+      },(error)=>{
+        console.log(error);
       }
     ).shutPretreatment();
 
     
-   getUser({ username, password }).then(
-      (data) => {
-        console.log("response", data);
-        // window.location.href = "/"; 
-      },(error)=>{
-        console.log(error);
-        
-      }
-    ).success = (response: any)=>{
-      console.log(response);
-    };
+    getUser({ username, password }).error = (error: any)=>{
+      console.log(error);
+      
+    }
+ 
+    // userData.shutPretreatment()
     // console.log(user);
     debugger
 

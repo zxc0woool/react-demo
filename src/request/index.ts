@@ -102,7 +102,6 @@ function PretreatmentData(
   } else {
     that.data = {};
     that.datas = [];
-    that.state = false;
     that.state = receive.state;
     that.message = receive.status ? receive.status : "操作失败";
     let Exception = onValidKey(receive.code, errorException) as any;
@@ -244,7 +243,7 @@ class then extends configureHttp {
    */
   then: ( successCall?: ((response: any) => void) | undefined, errorCall?: ((error: any) => void) | undefined ) => then;
   
-  constructor(executor:any) {
+  constructor(executor: any) {
     super();
     this.success = () => {};
     this.error = () => {};
@@ -258,16 +257,14 @@ class then extends configureHttp {
 
 }
 
-
-
 /**
  * 自定义http请求
  */
 class $http {
-  _httpGet: (usr: any, condition: any) => then;
-  _httpPut: (usr: any, condition: any) => then;
-  _httpDelete: (usr: any, condition: any) => then;
-  _httpPost: (usr: any, condition: any) => then;
+  _httpGet: (usr: string, condition: any) => then;
+  _httpPut: (usr: string, condition: any) => then;
+  _httpDelete: (usr: string, condition: any) => then;
+  _httpPost: (usr: string, condition: any) => then;
 
   constructor() {
     /**
@@ -331,6 +328,24 @@ class $http {
 /* 响应拦截器 */
 axios.interceptors.response.use(
   (response: any) => {
+    // let data : {
+    //     data: { 
+    //        Message: string; 
+    //     }; 
+    //     code: string | number | symbol; 
+    //     message: string;
+    // }
+    // const { data } = response;
+    // response.data ={
+    //   ...response.data,
+    //   code: data.code,
+    //   data: data.data,
+    //   message: data.message,
+    //   state: data.state
+    // }
+  
+    // console.log(" ");
+    
     // 请求成功后拦截预处理
     return response;
   },
